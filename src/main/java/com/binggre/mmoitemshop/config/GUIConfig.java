@@ -33,7 +33,7 @@ public class GUIConfig extends MongoConfiguration {
     private final CustomItemStack previous = CustomItemStack.create(47, "arrow", "§7이전", List.of(), 1, 0);
     private final CustomItemStack next = CustomItemStack.create(51, "arrow", "§7다음", List.of(), 1, 0);
 
-    public GUIConfig(String database, String collection) {
+    private GUIConfig(String database, String collection) {
         super(database, collection);
     }
 
