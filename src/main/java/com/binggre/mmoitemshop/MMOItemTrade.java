@@ -24,9 +24,9 @@ public final class MMOItemTrade extends BinggrePlugin {
         instance = this;
         saveResource("example.json", true);
 
-        tradeRepository = new ItemTradeRepository(this, "MMO-ItemTrade", "Trade", new HashMap<>());
+        tradeRepository = new ItemTradeRepository(this, DATA_BASE_NAME, "Trade", new HashMap<>());
         tradeRepository.init();
-        playerRepository = new PlayerRepository(this, "MMO-ItemTrade", "Player", new HashMap<>());
+        playerRepository = new PlayerRepository(this, DATA_BASE_NAME, "Player", new HashMap<>());
         playerRepository.init();
         GUIConfig.getInstance().init();
         MessageConfig.getInstance().init();
