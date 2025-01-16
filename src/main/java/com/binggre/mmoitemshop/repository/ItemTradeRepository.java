@@ -3,11 +3,11 @@ package com.binggre.mmoitemshop.repository;
 import com.binggre.binggreapi.utils.file.FileManager;
 import com.binggre.mmoitemshop.MMOItemTrade;
 import com.binggre.mmoitemshop.objects.MMOTrade;
-import com.binggre.mongolibraryplugin.MongoLibraryPlugin;
 import com.binggre.mongolibraryplugin.base.MongoCachedRepository;
 import org.bson.Document;
 import org.bukkit.plugin.Plugin;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -33,9 +33,10 @@ public class ItemTradeRepository extends MongoCachedRepository<Integer, MMOTrade
         List<MMOTrade> findAll = findAll();
 
         if (findAll.isEmpty()) {
-            MongoLibraryPlugin.getInst().getMongoClient()
-                    .getDatabase(MMOItemTrade.DATA_BASE_NAME)
-                    .createCollection("Trade");
+            File exampleFile = new File(MMOItemTrade.getInstance().getDataFolder(), "example.json");
+            MMOTrade read = FileManager.read(MMOTrade.class, exampleFile);
+            Document document = Document.parse(FileManager.toJson(read));
+            save(toEntity(document));
         }
 
         for (MMOTrade MMOTrade : findAll) {
