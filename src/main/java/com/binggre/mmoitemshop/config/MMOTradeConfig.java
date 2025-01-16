@@ -19,9 +19,6 @@ public class MMOTradeConfig extends MongoConfiguration {
         return instance;
     }
 
-    // npc, id
-    private final Map<String, Integer> map = new HashMap<>();
-
     private MMOTradeConfig(String database, String collection) {
         super(database, collection);
     }
