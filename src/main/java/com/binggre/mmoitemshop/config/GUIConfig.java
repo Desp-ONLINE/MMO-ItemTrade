@@ -28,7 +28,7 @@ public class GUIConfig extends MongoConfiguration {
     private String tradeDisplay = "§a교환";
     private String cantTradeDisplay = "§c교환 불가";
 
-    private List<String> cantTradeLore = List.of("§f다음 거래까지 <time> 남음.", "§f거래 제한 : <min> / <max>");
+    private final List<String> cantTradeLore = List.of("§f다음 거래까지 <time> 남음.", "§f거래 제한 : <min> / <max>");
 
     private final CustomItemStack trade = CustomItemStack.create(22, "chest", "§a교환", List.of(), 1, 0);
     private final CustomItemStack previous = CustomItemStack.create(47, "arrow", "§7이전", List.of(), 1, 0);
