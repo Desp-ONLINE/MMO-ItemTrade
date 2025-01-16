@@ -23,7 +23,8 @@ public class MessageConfig extends MongoConfiguration {
     private String prefix = "[교환] ";
     private String lackInventoryEmptyAmount = "§c인벤토리 공간이 부족합니다.";
     private String lackMaterialAmount = "§c재료가 부족합니다.";
-    private String trade = "§a교환이 성사되었습니다.";
+    private String overAmount = "§c더 이상 거래할 수 없습니다.";
+    private String trade = "§a거래가 성사되었습니다.";
 
     private String nextSound = Sound.UI_BUTTON_CLICK.name();
     private String previousSound = Sound.UI_BUTTON_CLICK.name();
@@ -45,6 +46,7 @@ public class MessageConfig extends MongoConfiguration {
 
             instance.lackMaterialAmount = prefix + ColorManager.format(instance.lackMaterialAmount);
             instance.lackInventoryEmptyAmount = prefix + ColorManager.format(instance.lackInventoryEmptyAmount);
+            instance.overAmount = prefix + ColorManager.format(instance.overAmount);
             instance.trade = prefix + ColorManager.format(instance.trade);
 
             instance.nextSound = instance.nextSound.toUpperCase().replace(" ", "_");

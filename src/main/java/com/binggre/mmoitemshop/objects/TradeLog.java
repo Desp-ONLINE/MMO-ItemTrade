@@ -11,9 +11,9 @@ public class TradeLog {
     private final int page;
     private LocalDateTime date;
 
-    public TradeLog(int page, int amount) {
+    public TradeLog(int page) {
         this.page = page;
-        this.amount = amount;
+        this.amount = 1;
         this.date = LocalDateTime.now();
     }
 

@@ -7,14 +7,14 @@
       "maxCount": 1,
       "materials": [
         {
-          "slotIndex": 24,
+          "slotIndex": 20,
           "mmoItem": "ORNAMENT:BOOK_OF_STRENGTH",
           "amount": 5
         }
       ],
       "results": [
         {
-          "slotIndex": 20,
+          "slotIndex": 24,
           "mmoItem": "SWORD:LONG_SWORD",
           "amount": 2
         }
@@ -25,14 +25,14 @@
       "maxCount": -1,
       "materials": [
         {
-          "slotIndex": 24,
+          "slotIndex": 20,
           "mmoItem": "CONSUMABLE:SANDWITCH",
           "amount": 10
         }
       ],
       "results": [
         {
-          "slotIndex": 20,
+          "slotIndex": 24,
           "mmoItem": "SWORD:LONG_SWORD",
           "amount": 3
         }

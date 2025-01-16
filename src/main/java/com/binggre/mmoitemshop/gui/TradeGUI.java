@@ -4,14 +4,17 @@ import com.binggre.binggreapi.functions.HolderListener;
 import com.binggre.binggreapi.functions.PageInventory;
 import com.binggre.binggreapi.objects.items.CustomItemStack;
 import com.binggre.binggreapi.utils.InventoryManager;
+import com.binggre.binggreapi.utils.ItemManager;
+import com.binggre.binggreapi.utils.NumberUtil;
+import com.binggre.mmoitemshop.MMOItemTrade;
 import com.binggre.mmoitemshop.config.GUIConfig;
 import com.binggre.mmoitemshop.config.MessageConfig;
-import com.binggre.mmoitemshop.objects.MMOTrade;
-import com.binggre.mmoitemshop.objects.TradeItem;
-import com.binggre.mmoitemshop.objects.TradeObject;
+import com.binggre.mmoitemshop.objects.*;
+import com.binggre.mmoitemshop.repository.PlayerRepository;
 import com.binggre.mmoplayerdata.utils.MMOUtil;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -19,6 +22,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,6 +37,8 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         player.openInventory(gui.inventory);
         gui.refresh();
     }
+
+    private static final PlayerRepository playerRepository = MMOItemTrade.getInstance().getPlayerRepository();
 
     private final Inventory inventory;
     private final Player player;
@@ -53,23 +59,42 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         GUIConfig guiConfig = guiConfig();
         Inventory inventory = Bukkit.createInventory(this, guiConfig.getSize() * 9, Component.text(guiConfig.getTitle().replace("<name>", mmoTrade.getName())));
 
-        CustomItemStack trade = guiConfig.getTrade();
         CustomItemStack previous = guiConfig.getPrevious();
         CustomItemStack next = guiConfig.getNext();
 
-        inventory.setItem(trade.getSlot(), trade.getItemStack());
         inventory.setItem(previous.getSlot(), previous.getItemStack());
         inventory.setItem(next.getSlot(), next.getItemStack());
 
         return inventory;
     }
 
-    public void refresh() {
+    private void refresh() {
         TradeObject trade = mmoTrade.getTrade(page);
         if (trade == null) {
             return;
         }
         tradeObject = trade;
+
+        GUIConfig guiConfig = guiConfig();
+        ItemStack tradeButton;
+
+        if (isTradable() && isTradableAmount()) {
+            tradeButton = ItemManager.create(Material.PAPER, "§a교환");
+            ItemManager.setCustomModelData(tradeButton, 999990);
+        } else {
+            PlayerTrade playerTrade = playerRepository.get(player.getUniqueId());
+            TradeLog tradeLog = playerTrade.getTradeLogs().get(page);
+            int nextSeconds = playerTrade.getNextSeconds(tradeObject, page);
+            tradeButton = ItemManager.create(Material.PAPER, guiConfig.getCantTradeDisplay(), guiConfig.getCantTradeLore());
+            ItemManager.setCustomModelData(tradeButton, 10003);
+            ItemManager.replaceLore(tradeButton, "<time>", NumberUtil.toTimeString(nextSeconds));
+            ItemManager.replaceLore(tradeButton, "<min>", tradeLog.getAmount() + "");
+            ItemManager.replaceLore(tradeButton, "<max>", tradeObject.getMaxCount() + "");
+        }
+
+        inventory.setItem(guiConfig.getTrade().getSlot(), tradeButton);
+
+
         tradeObject.getMaterials().forEach(tradeItem -> {
             inventory.setItem(tradeItem.getSlotIndex(), tradeItem.getItem());
         });
@@ -94,6 +119,14 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
 
         int slot = event.getSlot();
         if (slot == guiConfig().getTrade().getSlot()) {
+            refresh();
+            if (!isTradableAmount()) {
+                player.sendMessage(messageConfig().getOverAmount());
+                return;
+            }
+            if (!isTradable()) {
+                return;
+            }
             MessageConfig messageConfig = messageConfig();
             PlayerInventory playerInventory = player.getInventory();
             Map<String, Integer> itemAmounts = initAmountMap();
@@ -126,6 +159,8 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
             for (TradeItem result : tradeObject.getResults()) {
                 playerInventory.addItem(result.getItem());
             }
+            log();
+            refresh();
         }
     }
 
@@ -140,6 +175,32 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
             itemAmounts.put(key, itemAmounts.getOrDefault(key, 0) + amount);
         }
         return itemAmounts;
+    }
+
+    private boolean isTradable() {
+        PlayerTrade playerTrade = playerRepository.get(player.getUniqueId());
+        if (playerTrade == null) {
+            return true;
+        }
+        return playerTrade.isTradableDate(tradeObject, page);
+    }
+
+    private boolean isTradableAmount() {
+        PlayerTrade playerTrade = playerRepository.get(player.getUniqueId());
+        if (playerTrade == null) {
+            return true;
+        }
+        return playerTrade.isTradableAmount(tradeObject, page);
+    }
+
+    private void log() {
+        PlayerTrade playerTrade = playerRepository.get(player.getUniqueId());
+        if (playerTrade == null) {
+            playerTrade = new PlayerTrade(player);
+            playerRepository.putIn(playerTrade);
+        }
+        playerTrade.log(page);
+        playerRepository.save(playerTrade);
     }
 
     @Override

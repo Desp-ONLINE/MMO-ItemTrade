@@ -6,6 +6,7 @@ import com.binggre.mmoitemshop.config.GUIConfig;
 import com.binggre.mmoitemshop.config.MMOTradeConfig;
 import com.binggre.mmoitemshop.config.MessageConfig;
 import com.binggre.mmoitemshop.repository.ItemTradeRepository;
+import com.binggre.mmoitemshop.repository.PlayerRepository;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -17,6 +18,7 @@ public final class MMOItemTrade extends BinggrePlugin {
     private static MMOItemTrade instance;
     public static final String DATA_BASE_NAME = "MMO-ItemTrade";
     private ItemTradeRepository tradeRepository;
+    private PlayerRepository playerRepository;
 
     @Override
     public void onEnable() {
@@ -25,6 +27,8 @@ public final class MMOItemTrade extends BinggrePlugin {
 
         tradeRepository = new ItemTradeRepository(this, "MMO-ItemTrade", "Trade", new HashMap<>());
         tradeRepository.init();
+        playerRepository = new PlayerRepository(this, "MMO-ItemTrade", "Player", new HashMap<>());
+        playerRepository.init();
         GUIConfig.getInstance().init();
         MMOTradeConfig.getInstance().init();
         MessageConfig.getInstance().init();
@@ -36,5 +40,6 @@ public final class MMOItemTrade extends BinggrePlugin {
         GUIConfig.getInstance().save();
         MMOTradeConfig.getInstance().save();
         MessageConfig.getInstance().save();
+        playerRepository.init();
     }
 }
