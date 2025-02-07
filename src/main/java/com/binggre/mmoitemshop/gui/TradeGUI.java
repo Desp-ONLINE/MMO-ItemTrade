@@ -243,10 +243,10 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
     }
 
     private GUIConfig guiConfig() {
-        return GUIConfig.getInstance();
+        return MMOItemTrade.getInstance().getGuiConfig();
     }
 
     private MessageConfig messageConfig() {
-        return MessageConfig.getInstance();
+        return MMOItemTrade.getInstance().getMessageConfig();
     }
 }

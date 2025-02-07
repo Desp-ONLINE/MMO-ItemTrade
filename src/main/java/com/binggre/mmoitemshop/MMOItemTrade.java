@@ -16,6 +16,9 @@ public final class MMOItemTrade extends BinggrePlugin {
     @Getter
     private static MMOItemTrade instance;
     public static final String DATA_BASE_NAME = "MMO-ItemTrade";
+
+    private GUIConfig guiConfig;
+    private MessageConfig messageConfig;
     private ItemTradeRepository tradeRepository;
     private PlayerRepository playerRepository;
 
@@ -23,20 +26,21 @@ public final class MMOItemTrade extends BinggrePlugin {
     public void onEnable() {
         instance = this;
         saveResource("example.json", true);
-
+        guiConfig = new GUIConfig(DATA_BASE_NAME, "Config-GUI");
+        messageConfig = new MessageConfig(DATA_BASE_NAME, "Config-Message");
         tradeRepository = new ItemTradeRepository(this, DATA_BASE_NAME, "Trade", new HashMap<>());
         tradeRepository.init();
         playerRepository = new PlayerRepository(this, DATA_BASE_NAME, "Player", new HashMap<>());
         playerRepository.init();
-        GUIConfig.getInstance().init();
-        MessageConfig.getInstance().init();
+
         executeCommand(this, new AdminCommand());
     }
 
     @Override
     public void onDisable() {
         playerRepository.init();
-        GUIConfig.getInstance().save();
-        MessageConfig.getInstance().save();
+
+        guiConfig.save();
+        messageConfig.save();
     }
 }

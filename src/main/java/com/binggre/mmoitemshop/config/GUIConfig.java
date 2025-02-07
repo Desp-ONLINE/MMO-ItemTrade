@@ -13,41 +13,33 @@ import java.util.List;
 @Getter
 public class GUIConfig extends MongoConfiguration {
 
-    private static GUIConfig instance = null;
-
-    public static GUIConfig getInstance() {
-        if (instance == null) {
-            instance = new GUIConfig(MMOItemTrade.DATA_BASE_NAME, "Config-GUI");
-        }
-        return instance;
-    }
-
     private String title = "[거래] <name>";
     private final int size = 6;
 
     private String tradeDisplay = "§a교환";
     private String cantTradeDisplay = "§c교환 불가";
 
-    private final List<String> cantTradeLore = List.of("§f다음 거래까지 <time> 남음.", "§f거래 제한 : <min> / <max>");
+    private List<String> cantTradeLore = List.of("§f다음 거래까지 <time> 남음.", "§f거래 제한 : <min> / <max>");
 
     private final CustomItemStack trade = CustomItemStack.create(22, "chest", "§a교환", List.of(), 1, 0);
     private final CustomItemStack previous = CustomItemStack.create(47, "arrow", "§7이전", List.of(), 1, 0);
     private final CustomItemStack next = CustomItemStack.create(51, "arrow", "§7다음", List.of(), 1, 0);
 
-
-    private GUIConfig(String database, String collection) {
+    public GUIConfig(String database, String collection) {
         super(database, collection);
     }
 
     @Override
     public void init() {
         Document configDocument = getConfigDocument();
-        if (configDocument != null) {
-            instance = FileManager.toObject(configDocument.toJson(), GUIConfig.class);
-            instance.title = ColorManager.format(instance.title);
-            instance.tradeDisplay = ColorManager.format(instance.tradeDisplay);
-            instance.cantTradeDisplay = ColorManager.format(instance.cantTradeDisplay);
-            ColorManager.format(instance.cantTradeLore);
+        if (configDocument == null) {
+            return;
         }
+        String json = configDocument.toJson();
+        GUIConfig newInstance = FileManager.toObject(json, GUIConfig.class);
+        title = ColorManager.format(newInstance.title);
+        tradeDisplay = ColorManager.format(newInstance.tradeDisplay);
+        cantTradeDisplay = ColorManager.format(newInstance.cantTradeDisplay);
+        cantTradeLore = ColorManager.format(newInstance.cantTradeLore);
     }
 }

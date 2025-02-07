@@ -12,8 +12,9 @@ public class ReloadArgument implements CommandArgument {
 
     @Override
     public boolean execute(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
-        GUIConfig.getInstance().init();
-        MessageConfig.getInstance().init();
+        MMOItemTrade mmoItemTrade = MMOItemTrade.getInstance();
+        mmoItemTrade.getGuiConfig().init();
+        mmoItemTrade.getMessageConfig().init();
         MMOItemTrade.getInstance().getTradeRepository().init();
         commandSender.sendMessage("리로드 완료");
         return false;
