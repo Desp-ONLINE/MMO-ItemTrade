@@ -4,6 +4,7 @@ import com.binggre.binggreapi.BinggrePlugin;
 import com.binggre.mmoitemshop.commands.AdminCommand;
 import com.binggre.mmoitemshop.config.GUIConfig;
 import com.binggre.mmoitemshop.config.MessageConfig;
+import com.binggre.mmoitemshop.gui.TradeGUI;
 import com.binggre.mmoitemshop.repository.ItemTradeRepository;
 import com.binggre.mmoitemshop.repository.PlayerRepository;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import java.util.HashMap;
 public final class MMOItemTrade extends BinggrePlugin {
 
     @Getter
-    private static MMOItemTrade instance;
+    private static MMOItemTrade plugin;
     public static final String DATA_BASE_NAME = "MMO-ItemTrade";
 
     private GUIConfig guiConfig;
@@ -24,7 +25,7 @@ public final class MMOItemTrade extends BinggrePlugin {
 
     @Override
     public void onEnable() {
-        instance = this;
+        plugin = this;
         saveResource("example.json", true);
         guiConfig = new GUIConfig(DATA_BASE_NAME, "Config-GUI");
         messageConfig = new MessageConfig(DATA_BASE_NAME, "Config-Message");
@@ -38,8 +39,11 @@ public final class MMOItemTrade extends BinggrePlugin {
 
     @Override
     public void onDisable() {
-        playerRepository.init();
+        playerRepository.values().forEach(playerTrade -> {
+            playerRepository.save(playerTrade);
+        });
 
+        TradeGUI.closeAll();
         guiConfig.save();
         messageConfig.save();
     }

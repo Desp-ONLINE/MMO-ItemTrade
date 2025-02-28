@@ -33,7 +33,7 @@ public class ItemTradeRepository extends MongoCachedRepository<Integer, MMOTrade
         List<MMOTrade> findAll = findAll();
 
         if (findAll.isEmpty()) {
-            File exampleFile = new File(MMOItemTrade.getInstance().getDataFolder(), "example.json");
+            File exampleFile = new File(MMOItemTrade.getPlugin().getDataFolder(), "example.json");
             MMOTrade read = FileManager.read(MMOTrade.class, exampleFile);
             Document document = Document.parse(FileManager.toJson(read));
             save(toEntity(document));

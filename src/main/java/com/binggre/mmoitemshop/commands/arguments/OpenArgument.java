@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class OpenArgument implements CommandArgument {
 
-    private final ItemTradeRepository repository = MMOItemTrade.getInstance().getTradeRepository();
+    private final ItemTradeRepository repository = MMOItemTrade.getPlugin().getTradeRepository();
 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {

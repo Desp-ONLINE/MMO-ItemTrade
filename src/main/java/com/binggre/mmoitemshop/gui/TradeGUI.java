@@ -38,7 +38,16 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         gui.refresh();
     }
 
-    private static final PlayerRepository playerRepository = MMOItemTrade.getInstance().getPlayerRepository();
+    public static void closeAll() {
+        Bukkit.getOnlinePlayers().forEach(player -> {
+            Inventory inventory = player.getOpenInventory().getTopInventory();
+            if (inventory.getHolder() instanceof TradeGUI) {
+                player.closeInventory();
+            }
+        });
+    }
+
+    private static final PlayerRepository playerRepository = MMOItemTrade.getPlugin().getPlayerRepository();
 
     private final Inventory inventory;
     private final Player player;
@@ -243,10 +252,10 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
     }
 
     private GUIConfig guiConfig() {
-        return MMOItemTrade.getInstance().getGuiConfig();
+        return MMOItemTrade.getPlugin().getGuiConfig();
     }
 
     private MessageConfig messageConfig() {
-        return MMOItemTrade.getInstance().getMessageConfig();
+        return MMOItemTrade.getPlugin().getMessageConfig();
     }
 }
