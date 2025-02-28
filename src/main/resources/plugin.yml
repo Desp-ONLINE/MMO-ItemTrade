@@ -1,5 +1,5 @@
 name: MMOItemTrade
-version: '1.0.0'
+version: '${version}'
 main: com.binggre.mmoitemshop.MMOItemTrade
 api-version: '1.20'
 authors: [ binggre ]
