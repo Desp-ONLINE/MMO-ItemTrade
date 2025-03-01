@@ -51,6 +51,7 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
 
     private final Inventory inventory;
     private final Player player;
+    private final int tradeId;
     private final MMOTrade mmoTrade;
     private TradeObject tradeObject;
     private int page;
@@ -60,6 +61,7 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         this.page = 1;
         this.player = player;
         this.mmoTrade = mmoTrade;
+        this.tradeId = mmoTrade.getId();
         this.lastPage = mmoTrade.getPageCount();
         this.inventory = create();
     }
@@ -87,13 +89,15 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         GUIConfig guiConfig = guiConfig();
         ItemStack tradeButton;
 
-        if (isTradable() && isTradableAmount()) {
+        PlayerTrade playerTrade = playerRepository.get(player.getUniqueId());
+        playerTrade.reloadDateState();
+
+        if (isTradableDate() && isTradableAmount()) {
             tradeButton = ItemManager.create(Material.PAPER, "§a교환");
             ItemManager.setCustomModelData(tradeButton, 999990);
         } else {
-            PlayerTrade playerTrade = playerRepository.get(player.getUniqueId());
-            TradeLog tradeLog = playerTrade.getTradeLogs().get(page);
-            int nextSeconds = playerTrade.getNextSeconds(tradeObject, page);
+            TradeLog tradeLog = playerTrade.findTradeLog(tradeId, page);
+            int nextSeconds = playerTrade.getNextSeconds(tradeObject, tradeId, page);
             tradeButton = ItemManager.create(Material.PAPER, guiConfig.getCantTradeDisplay(), guiConfig.getCantTradeLore());
             ItemManager.setCustomModelData(tradeButton, 10003);
             ItemManager.replaceLore(tradeButton, "<time>", NumberUtil.toTimeString(nextSeconds));
@@ -129,11 +133,9 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         int slot = event.getSlot();
         if (slot == guiConfig().getTrade().getSlot()) {
             refresh();
+
             if (!isTradableAmount()) {
                 player.sendMessage(messageConfig().getOverAmount());
-                return;
-            }
-            if (!isTradable()) {
                 return;
             }
             MessageConfig messageConfig = messageConfig();
@@ -186,20 +188,14 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         return itemAmounts;
     }
 
-    private boolean isTradable() {
+    private boolean isTradableDate() {
         PlayerTrade playerTrade = playerRepository.get(player.getUniqueId());
-        if (playerTrade == null) {
-            return true;
-        }
-        return playerTrade.isTradableDate(tradeObject, page);
+        return playerTrade.isTradableDate(tradeObject, tradeId, page);
     }
 
     private boolean isTradableAmount() {
         PlayerTrade playerTrade = playerRepository.get(player.getUniqueId());
-        if (playerTrade == null) {
-            return true;
-        }
-        return playerTrade.isTradableAmount(tradeObject, page);
+        return playerTrade.isTradableAmount(tradeObject, tradeId, page);
     }
 
     private void log() {
@@ -208,7 +204,7 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
             playerTrade = new PlayerTrade(player);
             playerRepository.putIn(playerTrade);
         }
-        playerTrade.log(page);
+        playerTrade.log(tradeId, page);
         playerRepository.save(playerTrade);
     }
 

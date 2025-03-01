@@ -5,6 +5,7 @@ import com.binggre.mmoitemshop.commands.AdminCommand;
 import com.binggre.mmoitemshop.config.GUIConfig;
 import com.binggre.mmoitemshop.config.MessageConfig;
 import com.binggre.mmoitemshop.gui.TradeGUI;
+import com.binggre.mmoitemshop.listener.PlayerListener;
 import com.binggre.mmoitemshop.repository.ItemTradeRepository;
 import com.binggre.mmoitemshop.repository.PlayerRepository;
 import lombok.Getter;
@@ -35,6 +36,7 @@ public final class MMOItemTrade extends BinggrePlugin {
         playerRepository.init();
 
         executeCommand(this, new AdminCommand());
+        registerEvents(this, new PlayerListener());
     }
 
     @Override
