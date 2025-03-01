@@ -33,9 +33,11 @@ public class PlayerRepository extends MongoCachedRepository<UUID, PlayerTrade> {
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
             onlinePlayer.closeInventory();
             PlayerTrade byId = findById(onlinePlayer.getUniqueId());
-            if (byId != null) {
-                putIn(byId);
+            if (byId == null) {
+                byId = new PlayerTrade(onlinePlayer);
+                save(byId);
             }
+            putIn(byId);
         }
     }
 }
