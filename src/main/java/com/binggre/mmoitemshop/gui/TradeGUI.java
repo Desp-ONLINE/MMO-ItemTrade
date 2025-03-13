@@ -50,6 +50,7 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
     private static final PlayerRepository playerRepository = MMOItemTrade.getPlugin().getPlayerRepository();
 
     private final Inventory inventory;
+    private final ItemStack AIR = new ItemStack(Material.AIR);
     private final Player player;
     private final int tradeId;
     private final MMOTrade mmoTrade;
@@ -106,7 +107,6 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         }
 
         inventory.setItem(guiConfig.getTrade().getSlot(), tradeButton);
-
 
         tradeObject.getMaterials().forEach(tradeItem -> {
             inventory.setItem(tradeItem.getSlotIndex(), tradeItem.getItem());
@@ -228,6 +228,7 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
     @Override
     public void previous() {
         page = Math.max(1, page - 1);
+        tradeObject.getMaterials().forEach(tradeItem -> inventory.setItem(tradeItem.getSlotIndex(), AIR));
         player.playSound(player.getLocation(), Sound.valueOf(messageConfig().getPreviousSound()), 1, 1);
         refresh();
     }
