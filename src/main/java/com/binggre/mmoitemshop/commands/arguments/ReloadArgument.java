@@ -13,6 +13,7 @@ public class ReloadArgument implements CommandArgument {
         MMOItemTrade mmoItemTrade = MMOItemTrade.getPlugin();
         mmoItemTrade.getGuiConfig().init();
         mmoItemTrade.getMessageConfig().init();
+        mmoItemTrade.getTradeRepository().init();
         commandSender.sendMessage("리로드 완료");
         return false;
     }
