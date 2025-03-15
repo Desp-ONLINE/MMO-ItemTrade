@@ -221,6 +221,7 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
     @Override
     public void next() {
         page = Math.min(lastPage, page + 1);
+        movePageClear();
         refresh();
         player.playSound(player.getLocation(), Sound.valueOf(messageConfig().getNextSound()), 1, 1);
     }
@@ -228,9 +229,16 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
     @Override
     public void previous() {
         page = Math.max(1, page - 1);
-        tradeObject.getMaterials().forEach(tradeItem -> inventory.setItem(tradeItem.getSlotIndex(), AIR));
+        movePageClear();
         player.playSound(player.getLocation(), Sound.valueOf(messageConfig().getPreviousSound()), 1, 1);
         refresh();
+    }
+
+    private void movePageClear() {
+        if (tradeObject == null) {
+            return;
+        }
+        tradeObject.getMaterials().forEach(tradeItem -> inventory.setItem(tradeItem.getSlotIndex(), AIR));
     }
 
     @Override
