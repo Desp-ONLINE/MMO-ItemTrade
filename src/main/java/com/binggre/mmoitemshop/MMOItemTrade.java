@@ -29,7 +29,11 @@ public final class MMOItemTrade extends BinggrePlugin {
         plugin = this;
         saveResource("example.json", true);
         guiConfig = new GUIConfig(DATA_BASE_NAME, "Config-GUI");
+        guiConfig.init();
+
         messageConfig = new MessageConfig(DATA_BASE_NAME, "Config-Message");
+        messageConfig.init();
+
         tradeRepository = new ItemTradeRepository(this, DATA_BASE_NAME, "Trade", new HashMap<>());
         tradeRepository.init();
         playerRepository = new PlayerRepository(this, DATA_BASE_NAME, "Player", new HashMap<>());
@@ -44,9 +48,6 @@ public final class MMOItemTrade extends BinggrePlugin {
         playerRepository.values().forEach(playerTrade -> {
             playerRepository.save(playerTrade);
         });
-
         TradeGUI.closeAll();
-        guiConfig.save();
-        messageConfig.save();
     }
 }

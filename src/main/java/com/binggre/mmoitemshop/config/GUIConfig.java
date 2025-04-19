@@ -33,6 +33,7 @@ public class GUIConfig extends MongoConfiguration {
     public void init() {
         Document configDocument = getConfigDocument();
         if (configDocument == null) {
+            save();
             return;
         }
         String json = configDocument.toJson();

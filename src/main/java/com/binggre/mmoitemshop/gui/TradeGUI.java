@@ -94,8 +94,7 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         playerTrade.reloadDateState();
 
         if (isTradableDate() && isTradableAmount()) {
-            tradeButton = ItemManager.create(Material.PAPER, "§a교환");
-            ItemManager.setCustomModelData(tradeButton, 999990);
+            tradeButton = guiConfig.getTrade().getItemStack();
         } else {
             TradeLog tradeLog = playerTrade.findTradeLog(tradeId, page);
             int nextSeconds = playerTrade.getNextSeconds(tradeObject, tradeId, page);
@@ -170,6 +169,7 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
             for (TradeItem result : tradeObject.getResults()) {
                 playerInventory.addItem(result.getItem());
             }
+            player.playSound(player, "uisounds:purchase1", 1, 1);
             log();
             refresh();
         }

@@ -30,6 +30,7 @@ public class MessageConfig extends MongoConfiguration {
     public void init() {
         Document configDocument = getConfigDocument();
         if (configDocument == null) {
+            save();
             return;
         }
 
