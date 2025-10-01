@@ -13,13 +13,11 @@ public class ItemTradeEvent extends Event {
     public static final HandlerList handlers = new HandlerList();
 
     private final Player player;
-    private final int tradeId;
-    private final boolean success;
     private final TradeObject tradeObject;
+    private final boolean success;
 
-    public ItemTradeEvent(Player player, int tradeId, boolean success, TradeObject tradeObject) {
+    public ItemTradeEvent(Player player, boolean success, TradeObject tradeObject) {
         this.player = player;
-        this.tradeId = tradeId;
         this.success = success;
         this.tradeObject = tradeObject;
     }
