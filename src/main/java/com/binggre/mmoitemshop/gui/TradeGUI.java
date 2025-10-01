@@ -9,6 +9,7 @@ import com.binggre.binggreapi.utils.NumberUtil;
 import com.binggre.mmoitemshop.MMOItemTrade;
 import com.binggre.mmoitemshop.config.GUIConfig;
 import com.binggre.mmoitemshop.config.MessageConfig;
+import com.binggre.mmoitemshop.event.ItemTradeEvent;
 import com.binggre.mmoitemshop.objects.*;
 import com.binggre.mmoitemshop.repository.PlayerRepository;
 import com.binggre.mmoplayerdata.utils.MMOUtil;
@@ -129,12 +130,21 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
 
         event.setCancelled(true);
 
+        var tradeEvent = new Object() {
+
+            void call(boolean success) {
+                ItemTradeEvent tradeEvent = new ItemTradeEvent(player, tradeId, success, tradeObject);
+                tradeEvent.callEvent();
+            }
+        };
+
         int slot = event.getSlot();
         if (slot == guiConfig().getTrade().getSlot()) {
             refresh();
 
             if (!isTradableAmount()) {
                 player.sendMessage(messageConfig().getOverAmount());
+                tradeEvent.call(false);
                 return;
             }
             MessageConfig messageConfig = messageConfig();
@@ -172,6 +182,7 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
             player.playSound(player, "uisounds:purchase1", 1, 1);
             log();
             refresh();
+            tradeEvent.call(true);
         }
     }
 
