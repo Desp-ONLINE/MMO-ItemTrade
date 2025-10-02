@@ -133,7 +133,7 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         var tradeEvent = new Object() {
 
             void call(boolean success) {
-                ItemTradeEvent tradeEvent = new ItemTradeEvent(player, success, tradeObject);
+                ItemTradeEvent tradeEvent = new ItemTradeEvent(player, success, tradeId, tradeObject);
                 tradeEvent.callEvent();
             }
         };
