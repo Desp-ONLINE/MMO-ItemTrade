@@ -93,11 +93,29 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
 
         PlayerTrade playerTrade = playerRepository.get(player.getUniqueId());
         playerTrade.reloadDateState();
+        TradeLog tradeLog = playerTrade.findTradeLog(tradeId, page);
 
         if (isTradableDate() && isTradableAmount()) {
             tradeButton = guiConfig.getTrade().getItemStack();
+
+            switch (tradeObject.getReTradeMin()) {
+                case -1 -> {
+                    if (tradeLog == null) {
+                        ItemManager.addLore(tradeButton, "§f거래 제한 : 0 / ∞");
+                    } else {
+                        ItemManager.addLore(tradeButton, String.format("§f거래 제한 : %s / ∞", tradeLog.getAmount()));
+                    }
+                }
+                case -2 -> {
+                    if (tradeLog == null) {
+                        ItemManager.addLore(tradeButton, String.format("§f거래 제한 : 0 / %s", tradeObject.getMaxCount()));
+                    } else {
+                        ItemManager.addLore(tradeButton, String.format("§f거래 제한 : %s / %s", tradeLog.getAmount(), tradeObject.getMaxCount()));
+                    }
+                }
+            }
+
         } else {
-            TradeLog tradeLog = playerTrade.findTradeLog(tradeId, page);
             int nextSeconds = playerTrade.getNextSeconds(tradeObject, tradeId, page);
             tradeButton = ItemManager.create(Material.PAPER, guiConfig.getCantTradeDisplay(), guiConfig.getCantTradeLore());
             ItemManager.setCustomModelData(tradeButton, 10003);

@@ -42,7 +42,7 @@ public class PlayerTrade implements MongoData<UUID> {
                 int page = log.getPage();
                 TradeObject trade = mmoTrade.getTrade(page);
 
-                if (trade == null) {
+                if (trade == null || trade.getReTradeMin() == -2) {
                     continue;
                 }
                 if (isTradableDate(trade, id, page)) {
@@ -70,7 +70,7 @@ public class PlayerTrade implements MongoData<UUID> {
         if (tradeLogs == null || tradeLogs.isEmpty()) {
             return true;
         }
-        if (tradeObject.getReTradeMin() == -1) {
+        if (tradeObject.getReTradeMin() == -1 || tradeObject.getReTradeMin() == -2) {
             return true;
         }
         return tradeLogs.stream()
