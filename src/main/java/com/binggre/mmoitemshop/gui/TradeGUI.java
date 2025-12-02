@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -147,6 +148,10 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         }
 
         event.setCancelled(true);
+
+        if (event.getClickedInventory().getType() == InventoryType.PLAYER) {
+            return;
+        }
 
         var tradeEvent = new Object() {
 
