@@ -272,6 +272,7 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         if (tradeObject == null) {
             return;
         }
+        tradeObject.getResults().forEach(tradeItem -> inventory.setItem(tradeItem.getSlotIndex(), AIR));
         tradeObject.getMaterials().forEach(tradeItem -> inventory.setItem(tradeItem.getSlotIndex(), AIR));
     }
 
