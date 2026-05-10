@@ -22,10 +22,16 @@ public class TradeLog {
     public void increaseAmount() {
         amount++;
         totalAmount++;
-        lastDate = LocalDateTime.now();
     }
 
     public void clearAmount() {
         amount = 0;
+        lastDate = null;
+    }
+
+    public void startNewWindow() {
+        amount = 1;
+        totalAmount++;
+        lastDate = LocalDateTime.now();
     }
 }

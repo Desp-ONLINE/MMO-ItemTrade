@@ -15,7 +15,6 @@ public class PlayerTrade implements MongoData<UUID> {
 
     private final UUID id;
     private String nickname;
-    // trade Id, List<Log>
     private final Map<Integer, List<TradeLog>> tradeLogs;
 
     public PlayerTrade(Player player) {
@@ -35,59 +34,59 @@ public class PlayerTrade implements MongoData<UUID> {
     public void reloadDateState() {
         ItemTradeRepository tradeRepository = MMOItemTrade.getPlugin().getTradeRepository();
         tradeLogs.forEach((id, tradeLogList) -> {
-
             MMOTrade mmoTrade = tradeRepository.get(id);
-
+            if (mmoTrade == null) {
+                return;
+            }
             for (TradeLog log : tradeLogList) {
                 int page = log.getPage();
                 TradeObject trade = mmoTrade.getTrade(page);
-
-                if (trade == null || trade.getReTradeMin() == -2) {
+                if (trade == null || trade.getReTradeMin() <= 0) {
                     continue;
                 }
-                if (isTradableDate(trade, id, page)) {
+                if (isWindowExpired(log, trade.getReTradeMin())) {
                     log.clearAmount();
                 }
             }
         });
     }
 
+    private boolean isWindowExpired(TradeLog log, int reTradeMin) {
+        if (log.getLastDate() == null) {
+            return true;
+        }
+        return !log.getLastDate().plusMinutes(reTradeMin).isAfter(LocalDateTime.now());
+    }
+
     public boolean isTradableAmount(TradeObject tradeObject, int id, int page) {
-        List<TradeLog> tradeLogs = this.tradeLogs.get(id);
-        if (tradeLogs == null || tradeLogs.isEmpty()) {
+        if (tradeObject.getMaxCount() <= 0) {
             return true;
         }
-        if (tradeObject.getMaxCount() == -1) {
+        List<TradeLog> logs = this.tradeLogs.get(id);
+        if (logs == null || logs.isEmpty()) {
             return true;
         }
-        return tradeLogs.stream()
-                .filter(tradeLog -> tradeLog.getPage() == page)
-                .noneMatch(tradeLog -> tradeLog.getAmount() >= tradeObject.getMaxCount());
+        return logs.stream()
+                .filter(log -> log.getPage() == page)
+                .noneMatch(log -> log.getAmount() >= tradeObject.getMaxCount());
     }
 
     public boolean isTradableDate(TradeObject tradeObject, int id, int page) {
-        List<TradeLog> tradeLogs = this.tradeLogs.get(id);
-        if (tradeLogs == null || tradeLogs.isEmpty()) {
-            return true;
-        }
-        if (tradeObject.getReTradeMin() == -1 || tradeObject.getReTradeMin() == -2) {
-            return true;
-        }
-        return tradeLogs.stream()
-                .filter(log -> log.getPage() == page)
-                .map(log -> log.getLastDate().plusMinutes(tradeObject.getReTradeMin()))
-                .noneMatch(nextTradeTime -> nextTradeTime.isAfter(LocalDateTime.now()));
+        return true;
     }
 
     public int getNextSeconds(TradeObject tradeObject, int id, int page) {
+        if (tradeObject.getReTradeMin() <= 0) {
+            return -1;
+        }
         List<TradeLog> tradeLogs = this.tradeLogs.get(id);
         if (tradeLogs == null) {
             return -1;
         }
         return tradeLogs.stream()
                 .filter(log -> log.getPage() == page)
+                .filter(log -> log.getLastDate() != null)
                 .map(log -> log.getLastDate().plusMinutes(tradeObject.getReTradeMin()))
-                .filter(nextTradeTime -> nextTradeTime.isAfter(LocalDateTime.now()))
                 .findFirst()
                 .map(this::getSecondsUntilNextTrade)
                 .orElse(-1);
@@ -113,6 +112,12 @@ public class PlayerTrade implements MongoData<UUID> {
                 .stream()
                 .filter(tradeLog -> tradeLog.getPage() == page)
                 .findFirst()
-                .ifPresentOrElse(TradeLog::increaseAmount, () -> this.tradeLogs.get(id).add(new TradeLog(page)));
+                .ifPresentOrElse(log -> {
+                    if (log.getLastDate() == null) {
+                        log.startNewWindow();
+                    } else {
+                        log.increaseAmount();
+                    }
+                }, () -> this.tradeLogs.get(id).add(new TradeLog(page)));
     }
 }

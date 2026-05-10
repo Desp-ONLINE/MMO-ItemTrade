@@ -3,8 +3,8 @@ package com.binggre.mmoitemshop.gui;
 import com.binggre.binggreapi.functions.HolderListener;
 import com.binggre.binggreapi.functions.PageInventory;
 import com.binggre.binggreapi.objects.items.CustomItemStack;
+import com.binggre.binggreapi.utils.ColorManager;
 import com.binggre.binggreapi.utils.InventoryManager;
-import com.binggre.binggreapi.utils.ItemManager;
 import com.binggre.binggreapi.utils.NumberUtil;
 import com.binggre.mmoitemshop.MMOItemTrade;
 import com.binggre.mmoitemshop.config.GUIConfig;
@@ -26,8 +26,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,49 +92,76 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         tradeObject = trade;
 
         GUIConfig guiConfig = guiConfig();
-        ItemStack tradeButton;
-
         PlayerTrade playerTrade = playerRepository.get(player.getUniqueId());
         playerTrade.reloadDateState();
         TradeLog tradeLog = playerTrade.findTradeLog(tradeId, page);
 
-        if (isTradableDate() && isTradableAmount()) {
-            tradeButton = guiConfig.getTrade().getItemStack();
-
-            switch (tradeObject.getReTradeMin()) {
-                case -1 -> {
-                    if (tradeLog == null) {
-                        ItemManager.addLore(tradeButton, "§f거래 제한 : 0 / ∞");
-                    } else {
-                        ItemManager.addLore(tradeButton, String.format("§f거래 제한 : %s / ∞", tradeLog.getAmount()));
-                    }
-                }
-                case -2 -> {
-                    if (tradeLog == null) {
-                        ItemManager.addLore(tradeButton, String.format("§f거래 제한 : 0 / %s", tradeObject.getMaxCount()));
-                    } else {
-                        ItemManager.addLore(tradeButton, String.format("§f거래 제한 : %s / %s", tradeLog.getAmount(), tradeObject.getMaxCount()));
-                    }
-                }
-            }
-
-        } else {
-            int nextSeconds = playerTrade.getNextSeconds(tradeObject, tradeId, page);
-            tradeButton = ItemManager.create(Material.PAPER, guiConfig.getCantTradeDisplay(), guiConfig.getCantTradeLore());
-            ItemManager.setCustomModelData(tradeButton, 10003);
-            ItemManager.replaceLore(tradeButton, "<time>", NumberUtil.toTimeString(nextSeconds));
-            ItemManager.replaceLore(tradeButton, "<min>", tradeLog.getAmount() + "");
-            ItemManager.replaceLore(tradeButton, "<max>", tradeObject.getMaxCount() + "");
-        }
-
+        ItemStack tradeButton = buildTradeButton(guiConfig, tradeLog, playerTrade);
         inventory.setItem(guiConfig.getTrade().getSlot(), tradeButton);
 
-        tradeObject.getMaterials().forEach(tradeItem -> {
-            inventory.setItem(tradeItem.getSlotIndex(), tradeItem.getItem());
-        });
-        tradeObject.getResults().forEach(tradeItem -> {
-            inventory.setItem(tradeItem.getSlotIndex(), tradeItem.getItem());
-        });
+        tradeObject.getMaterials().forEach(tradeItem -> inventory.setItem(tradeItem.getSlotIndex(), tradeItem.getItem()));
+        tradeObject.getResults().forEach(tradeItem -> inventory.setItem(tradeItem.getSlotIndex(), tradeItem.getItem()));
+    }
+
+    private ItemStack buildTradeButton(GUIConfig guiConfig, TradeLog tradeLog, PlayerTrade playerTrade) {
+        int amount = (tradeLog == null) ? 0 : tradeLog.getAmount();
+        int maxCount = tradeObject.getMaxCount();
+        int reTradeMin = tradeObject.getReTradeMin();
+        boolean tradable = playerTrade.isTradableAmount(tradeObject, tradeId, page);
+        int nextSeconds = playerTrade.getNextSeconds(tradeObject, tradeId, page);
+
+        ItemStack tradeButton;
+        String displayName;
+        String hintLine;
+
+        if (tradable) {
+            tradeButton = guiConfig.getTrade().getItemStack().clone();
+            displayName = null;
+            hintLine = ColorManager.format(" " + GUIConfig.WHITE + "▶ " + GUIConfig.SKY + "클릭하여 교환합니다");
+        } else {
+            tradeButton = new ItemStack(Material.CLOCK);
+            displayName = ColorManager.format(GUIConfig.ROSE + "✦ 교환 대기 중 ✦");
+            hintLine = ColorManager.format(" " + GUIConfig.ROSE + "✦ " + GUIConfig.WHITE + "거래 한도에 도달했습니다");
+        }
+
+        String divider = ColorManager.format(GUIConfig.SKY + "━━━━━━━━━━━━━━━━━━");
+
+        List<String> lore = new ArrayList<>();
+        lore.add(divider);
+        lore.add(" ");
+        lore.add(hintLine);
+        lore.add(" ");
+
+        if (maxCount > 0) {
+            String countColor = tradable ? GUIConfig.WHITE : GUIConfig.ROSE;
+            lore.add(ColorManager.format(" " + GUIConfig.CREAM + "교환 횟수  " + GUIConfig.GRAY + "┃  " + countColor + amount + GUIConfig.GRAY + " / " + GUIConfig.WHITE + maxCount + GUIConfig.GRAY + "회"));
+        } else {
+            lore.add(ColorManager.format(" " + GUIConfig.CREAM + "교환 횟수  " + GUIConfig.GRAY + "┃  " + GUIConfig.WHITE + amount + GUIConfig.GRAY + "회"));
+        }
+
+        if (reTradeMin > 0) {
+            if (nextSeconds > 0) {
+                lore.add(ColorManager.format(" " + GUIConfig.SKY + "초기화까지  " + GUIConfig.GRAY + "┃  " + GUIConfig.WHITE + NumberUtil.toTimeString(nextSeconds)));
+            } else {
+                lore.add(ColorManager.format(" " + GUIConfig.SKY + "교환 쿨타임  " + GUIConfig.GRAY + "┃  " + GUIConfig.WHITE + formatCooldown(reTradeMin)));
+                lore.add(ColorManager.format(" " + GUIConfig.GRAY + "( 교환 시 쿨타임이 작동합니다 )"));
+            }
+        } else {
+            lore.add(ColorManager.format(" " + GUIConfig.SKY + "교환 쿨타임  " + GUIConfig.GRAY + "┃  " + GUIConfig.MINT + "쿨타임 없음"));
+        }
+
+        lore.add(" ");
+        lore.add(divider);
+
+        ItemMeta meta = tradeButton.getItemMeta();
+        if (meta != null) {
+            if (displayName != null) {
+                meta.setDisplayName(displayName);
+            }
+            meta.setLore(lore);
+            tradeButton.setItemMeta(meta);
+        }
+        return tradeButton;
     }
 
     @Override
@@ -165,11 +194,13 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         if (slot == guiConfig().getTrade().getSlot()) {
             refresh();
 
-            if (!isTradableAmount()) {
+            PlayerTrade playerTrade = playerRepository.get(player.getUniqueId());
+            if (!playerTrade.isTradableAmount(tradeObject, tradeId, page)) {
                 player.sendMessage(messageConfig().getOverAmount());
                 tradeEvent.call(false);
                 return;
             }
+
             MessageConfig messageConfig = messageConfig();
             PlayerInventory playerInventory = player.getInventory();
             Map<String, Integer> itemAmounts = initAmountMap();
@@ -205,8 +236,29 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
             player.playSound(player, "uisounds:purchase1", 1, 1);
             log();
             refresh();
+            player.updateInventory();
             tradeEvent.call(true);
+            Bukkit.getScheduler().runTaskLater(MMOItemTrade.getPlugin(), () -> {
+                refresh();
+                player.updateInventory();
+            }, 1L);
         }
+    }
+
+    private static String formatCooldown(int minutes) {
+        int hours = minutes / 60;
+        int mins = minutes % 60;
+        StringBuilder sb = new StringBuilder();
+        if (hours > 0) {
+            sb.append(hours).append("시간");
+        }
+        if (mins > 0 || hours == 0) {
+            if (hours > 0) {
+                sb.append(" ");
+            }
+            sb.append(mins).append("분");
+        }
+        return sb.toString();
     }
 
     private @NotNull Map<String, Integer> initAmountMap() {
@@ -220,16 +272,6 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
             itemAmounts.put(key, itemAmounts.getOrDefault(key, 0) + amount);
         }
         return itemAmounts;
-    }
-
-    private boolean isTradableDate() {
-        PlayerTrade playerTrade = playerRepository.get(player.getUniqueId());
-        return playerTrade.isTradableDate(tradeObject, tradeId, page);
-    }
-
-    private boolean isTradableAmount() {
-        PlayerTrade playerTrade = playerRepository.get(player.getUniqueId());
-        return playerTrade.isTradableAmount(tradeObject, tradeId, page);
     }
 
     private void log() {
@@ -272,7 +314,6 @@ public class TradeGUI implements InventoryHolder, HolderListener, PageInventory 
         if (tradeObject == null) {
             return;
         }
-        tradeObject.getResults().forEach(tradeItem -> inventory.setItem(tradeItem.getSlotIndex(), AIR));
         tradeObject.getMaterials().forEach(tradeItem -> inventory.setItem(tradeItem.getSlotIndex(), AIR));
     }
 

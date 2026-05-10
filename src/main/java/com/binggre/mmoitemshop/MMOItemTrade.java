@@ -28,7 +28,7 @@ public final class MMOItemTrade extends BinggrePlugin {
     public void onEnable() {
         plugin = this;
         saveResource("example.json", true);
-        guiConfig = new GUIConfig(DATA_BASE_NAME, "Config-GUI");
+        guiConfig = new GUIConfig();
         guiConfig.init();
 
         messageConfig = new MessageConfig(DATA_BASE_NAME, "Config-Message");
