@@ -113,7 +113,7 @@ public class PlayerTrade implements MongoData<UUID> {
                 .filter(tradeLog -> tradeLog.getPage() == page)
                 .findFirst()
                 .ifPresentOrElse(log -> {
-                    if (log.getLastDate() == null) {
+                    if (log.getAmount() == 0) {
                         log.startNewWindow();
                     } else {
                         log.increaseAmount();

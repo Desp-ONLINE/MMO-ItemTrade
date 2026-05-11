@@ -26,7 +26,6 @@ public class TradeLog {
 
     public void clearAmount() {
         amount = 0;
-        lastDate = null;
     }
 
     public void startNewWindow() {
